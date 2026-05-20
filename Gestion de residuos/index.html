@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
+  <title>Gestión de Residuos</title>
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script src="js/residuos.js"></script>
+  <script src="js/rgpd.js"></script>
+  <script src="js/app.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <span class="nav-item active" data-page="historial">Historial</span>
+    <span class="nav-item" data-page="nueva">Nueva Recogida</span>
+    <span class="nav-item" data-page="residuos">Residuos</span>
+  </nav>
+
+  <!-- OVERLAY — QR -->
+  <div class="overlay js-qr-overlay">
+    <div class="popup qr-popup">
+      <h3 class="js-qr-name"></h3>
+      <div class="qr-box">
+        <div class="js-qr-container"></div>
+      </div>
+      <button class="btn-primary js-qr-print">&#128438; Imprimir QR</button>
+      <button class="btn-secondary js-qr-close">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL — Primer plan (solicita fechas de inicio) -->
+  <div class="modal-overlay js-modal-first">
+    <div class="modal-box">
+      <h3>Crear primer Plan Anual</h3>
+      <p>Es la primera vez que se crea un plan. Indica las fechas de inicio de stock. Solo se solicita esta vez.
+      <div class="modal-field">
+        <label>Año del plan</label>
+        <input type="number" class="js-fp-year" min="2020" max="2099" value="2026">
+      </div>
+      <div class="modal-field">
+        <label>Fecha inicio stock — Parciales</label>
+        <input type="date" class="js-fp-startP">
+      </div>
+      <div class="modal-field">
+        <label>Fecha inicio stock — Completas</label>
+        <input type="date" class="js-fp-startC">
+      </div>
+      <div class="modal-field">
+      <button class="btn-primary js-fp-confirm">Crear plan</button>
+      <button class="btn-secondary js-fp-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL — Nuevo plan (años siguientes) -->
+  <div class="modal-overlay js-modal-new">
+    <div class="modal-box">
+      <h3>Nuevo Plan Anual</h3>
+      <p>Introduce el año para el nuevo plan de gestión.
+      <div class="modal-field">
+        <label>Año del plan</label>
+        <input type="number" class="js-np-year" min="2020" max="2099">
+      </div>
+      <div class="modal-field">
+        <button class="btn-primary js-np-confirm">Crear plan</button>
+        <button class="btn-secondary js-np-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL — Editar retirada realizada -->
+  <div class="modal-overlay js-modal-edit">
+    <div class="modal-box">
+      <h3 class="js-edit-title">Editar retirada</h3>
+      <div class="modal-field">
+        <label>Responsable</label>
+        <input type="text" class="js-edit-resp">
+      </div>
+      <div class="modal-field">
+        <label>Fecha de retirada</label>
+        <input type="date" class="js-edit-fecha">
+      </div>
+      <div class="modal-field">
+        <label>Tipo de recogida</label>
+        <select class="js-edit-tipo">
+          <option value="P">Parcial
+          <option value="C">Completa
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Empresa gestora</label>
+        <select class="js-edit-gestor"></select>
+      </div>
+      <div class="modal-field">
+        <label>Incidencias</label>
+        <textarea class="js-edit-incidencias" rows="3"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Pesos por residuo (Kg)</label>
+        <div class="js-edit-weights-body"></div>
+      </div>
+      <div class="modal-field">
+        <button class="btn-primary js-edit-confirm">Guardar cambios</button>
+        <button class="btn-secondary js-edit-cancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA — Historial -->
+  <div class="page active" data-page="historial">
+    <div class="page-header">
+      <h2>Historial de Gestión de Residuos</h2>
+    </div>
+    <div class="actions-bar">
+      <button class="btn-icon js-btn-new">&#10133; Nuevo Plan</button>
+      <button class="btn-icon js-btn-edit hidden">&#9998; Editar</button>
+      <button class="btn-icon js-btn-save hidden">&#128190; Guardar</button>
+      <button class="btn-icon js-btn-archive hidden">&#128452; Archivar</button>
+    </div>
+    <div class="js-hist-container"></div>
+  </div>
+
+  <!-- PÁGINA — Detalle de retirada -->
+  <div class="page" data-page="hist-rec">
+    <button class="btn-back js-back-hist-rec">&#8617; Volver</button>
+    <div class="page-header">
+      <h2 class="js-hr-title"></h2>
+      <button class="btn-pdf js-hr-print" title="Imprimir retirada">&#128438;</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Responsable</label>
+        <span class="ro js-hr-resp"></span>
+      </div>
+      <div class="form-group">
+        <label>Fecha de retirada</label>
+        <span class="ro js-hr-fecha"></span>
+      </div>
+      <div class="form-group">
+        <label>Tipo de recogida</label>
+        <span class="ro js-hr-tipo"></span>
+      </div>
+      <div class="form-group">
+        <label>Empresa gestora</label>
+        <span class="ro js-hr-gestor"></span>
+      </div>
+    </div>
+    <div class="records-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Residuo
+            <th>Cod. Act.
+            <th>Cod. LER
+            <th>Peso (Kg)
+            <th>Foto
+        </thead>
+        <tbody class="js-hr-waste-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="inc-block">
+        <label>Incidencias</label>
+        <div class="ro ro-block js-hr-inc"></div>
+      </div>
+      <div class="sig-block">
+        <label>Firma empresa recogida</label>
+        <canvas class="sig js-hr-sig-canvas" width="320" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- PÁGINA — Nueva Recogida -->
+  <div class="page" data-page="nueva">
+    <div class="page-header">
+      <h2>Nueva Recogida de Residuos</h2>
+    </div>
+    <div class="form-row">
+      <div class="form-group fg-xl">
+        <label>Retirada prevista (plan)</label>
+        <select class="js-f-pickup"></select>
+      </div>
+      <div class="form-group fg-lg">
+        <label>Responsable</label>
+        <input type="text" class="js-f-resp" placeholder="Nombre">
+      </div>
+      <div class="form-group fg-md">
+        <label>Fecha real de retirada</label>
+        <input type="date" class="js-f-fecha">
+      </div>
+      <div class="form-group fg-md">
+        <label>Tipo de recogida</label>
+        <select class="js-f-tipo">
+          <option value="">— Tipo —
+          <option value="P">Parcial
+          <option value="C">Completa
+        </select>
+      </div>
+      <div class="form-group fg-lg">
+        <label>Empresa gestora</label>
+        <select class="js-f-gestor"></select>
+      </div>
+    </div>
+    <div class="err-msg hidden js-f-type-err">&#9888; El tipo no coincide con la retirada del plan.</div>
+    <div class="section-title">Residuos a retirar</div>
+    <div class="records-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Residuo
+            <th>Cod. Act.
+            <th>Cod. LER
+            <th>Peso (Kg)
+            <th>Foto etiqueta
+        </thead>
+        <tbody class="js-f-waste-body"></tbody>
+      </table>
+    </div>
+    <div class="form-row">
+      <div class="inc-block">
+        <label>Incidencias</label>
+        <textarea class="js-f-incidencias" rows="4"></textarea>
+      </div>
+      <div class="sig-block">
+        <label>Firma empresa recogida</label>
+        <canvas class="sig js-sig-canvas" width="320" height="100"></canvas>
+        <button class="btn-secondary js-btn-clear-sig">Limpiar firma</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <button class="btn-primary js-btn-save-form">&#128190; Guardar</button>
+      <button class="btn-secondary js-btn-cancel-form">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- PÁGINA — Residuos -->
+  <div class="page" data-page="residuos">
+    <div class="page-header">
+      <h2>Residuos</h2>
+    </div>
+    <div class="search-wrap">
+      <input type="text" class="js-search-input" placeholder="Buscar por nombre…">
+    </div>
+    <div class="waste-grid js-waste-grid"></div>
+  </div>
+
+  <!-- PÁGINA — Detalle de residuo -->
+  <div class="page" data-page="residuo-det">
+    <button class="btn-back js-back-residuo">&#8617; Volver a Residuos</button>
+    <div class="page-header">
+      <h2 class="js-det-title"></h2>
+      <button class="btn-qr js-det-qr-btn" title="Ver QR">&#9646;&#9646; QR</button>
+      <button class="btn-pdf js-det-print-btn" title="Imprimir ficha">&#128438;</button>
+    </div>
+    <div>
+      <fieldset class="col-half">
+        <legend>Identificación del residuo</legend>
+        <div class="detail-row"><span class="detail-label">Código Tratamiento:</span><span class="detail-value js-det-trat"></span></div>
+        <div class="detail-row"><span class="detail-label">Código LER:</span><span class="detail-value js-det-ler"></span></div>
+        <div class="detail-row"><span class="detail-label">Código Activo:</span><span class="detail-value js-det-act"></span></div>
+        <div class="detail-row"><span class="detail-label">Tipo:</span><span class="detail-value js-det-tipo"></span></div>
+      </fieldset>
+      <fieldset class="col-half">
+        <legend>Naturaleza del residuo</legend>
+        <div class="hazard-big js-det-hazard"></div>
+      </fieldset>
+    </div>
+    <div>
+      <fieldset class="col-half">
+        <legend>Datos del titular</legend>
+        <div class="detail-row"><span class="detail-label">Nombre:</span><span class="detail-value js-det-tit-nom"></span></div>
+        <div class="detail-row"><span class="detail-label">Productor:</span><span class="detail-value js-productor-cod"></span></div>
+        <div class="detail-row"><span class="detail-label">NIMA:</span><span class="detail-value js-nima-cod"></span></div>
+        <div class="detail-row"><span class="detail-label">Dirección:</span><span class="detail-value js-det-tit-dir"></span></div>
+        <div class="detail-row"><span class="detail-label">Teléfono:</span><span class="detail-value js-det-tit-tel"></span></div>
+      </fieldset>
+      <fieldset class="col-half">
+        <legend>Gestor de residuos autorizado</legend>
+        <div class="detail-row"><span class="detail-label">Nombre:</span><span class="detail-value js-det-gest-nom"></span></div>
+        <div class="detail-row"><span class="detail-label">Nº Autorización:</span><span class="detail-value js-det-gest-aut"></span></div>
+        <div class="detail-row"><span class="detail-label">Dirección:</span><span class="detail-value js-det-gest-dir"></span></div>
+        <div class="detail-row"><span class="detail-label">Teléfono:</span><span class="detail-value js-det-gest-tel"></span></div>
+      </fieldset>
+    </div>
+    <div class="records-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref.
+            <th>Fecha Inicio
+            <th>Fecha Retirada
+            <th>Responsable
+            <th>Peso (Kg)
+            <th>Gestor
+            <th>Documento
+        </thead>
+        <tbody class="js-det-hist-body"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
